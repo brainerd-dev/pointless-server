@@ -161,7 +161,7 @@ const addToSet = async (collectionName, id, addition) => {
         (err, { matchedCount, modifiedCount }) => {
           if (err) reject(err);
           const alreadyExists = matchedCount === 1 && modifiedCount === 0;
-          resolve({ alreadyExists, id });
+          resolve({ alreadyExists, id, addition });
         }
       );
   });
@@ -176,7 +176,7 @@ const pullFromSet = async (collectionName, id, removal) => {
         (err, { matchedCount, modifiedCount }) => {
           if (err) reject(err);
           const notAMember = matchedCount === 1 && modifiedCount === 0;
-          resolve({ notAMember, id });
+          resolve({ notAMember, id, removal });
         }
       );
   });

@@ -27,6 +27,7 @@ const createPool = async (name, createdBy, users) => {
 };
 
 const addWager = async (poolId, wager) => {
+  log.cool(`Adding Wager ${wager._id} to pool ${poolId}`);
   return await data.addToSet(
     POOLS_COLLECTION,
     poolId, {
@@ -37,9 +38,15 @@ const addWager = async (poolId, wager) => {
   });
 };
 
+const removeWager = async (poolId, wagerId) => {
+  log.cool(`Removing Wager ${wagerId} from pool ${poolId}`);
+  return await data.pullFromSet(POOLS_COLLECTION, poolId, { wagers: { _id: ObjectID(wagerId) } });
+};
+
 module.exports = {
   getUserPools,
   getPoolById,
   createPool,
-  addWager
+  addWager,
+  removeWager
 };

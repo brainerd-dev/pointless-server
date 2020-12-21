@@ -22,9 +22,15 @@ const postWagerBody = Joi.object({
   users: Joi.array().required()
 });
 
+const defaultWagerParams = Joi.object({
+  poolId: Joi.string().required(),
+  wagerId: Joi.string().required()
+});
+
 module.exports = {
   getUserPoolsQuery,
   defaultPoolParams,
   postPoolBody,
-  postWagerBody
+  postWagerBody,
+  defaultWagerParams
 };

@@ -6,7 +6,8 @@ const {
   getUserPoolsQuery,
   defaultPoolParams,
   postPoolBody,
-  postWagerBody
+  postWagerBody,
+  defaultWagerParams
 } = require('./validation/pools');
 
 pools.get('/', validator.query(getUserPoolsQuery), async (req, res) => {
@@ -41,7 +42,7 @@ pools.post('/', validator.body(postPoolBody), async (req, res) => {
 
   const pool = await poolsData.createPool(name, createdBy, poolUsers);
 
-  return status.success(res, { ...pool });
+  return status.created(res, { ...pool });
 });
 
 pools.post('/:poolId/wagers',
@@ -51,7 +52,17 @@ pools.post('/:poolId/wagers',
 
     const newWager = await poolsData.addWager(poolId, { amount, description, users });
 
-    return status.success(res, { ...newWager });
+    return status.created(res, { ...newWager });
+  }
+);
+
+pools.delete('/:poolId/wagers/:wagerId',
+  validator.params(defaultWagerParams), async (req, res) => {
+    const { params: { poolId, wagerId } } = req;
+
+    const removedWager = await poolsData.removeWager(poolId, wagerId);
+
+    return status.success(res, { ...removedWager });
   }
 );
 
