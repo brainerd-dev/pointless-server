@@ -16,7 +16,7 @@ const postPoolBody = Joi.object({
   users: Joi.array()
 });
 
-const patchWagersBody = Joi.object({
+const postWagerBody = Joi.object({
   amount: Joi.number().required(),
   description: Joi.string().required(),
   users: Joi.array().required()
@@ -26,5 +26,5 @@ module.exports = {
   getUserPoolsQuery,
   defaultPoolParams,
   postPoolBody,
-  patchWagersBody
+  postWagerBody
 };
