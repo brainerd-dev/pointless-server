@@ -72,9 +72,24 @@ pools.post('/:poolId/wagers',
   validator.body(postWagerBody), async (req, res) => {
     const { params: { poolId }, body: { amount, description, users } } = req;
 
-    const addedWager = await poolsData.addWager(poolId, { amount, description, users });
+    const pool = await poolsData.getPoolById(poolId);
 
-    return status.created(res, { ...addedWager });
+    let hasError = false;
+    users.forEach(userEmail => {
+      if (!pool.users.includes(userEmail)) {
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      return status.badRequest(res, {
+        message: 'User is not a member of this pool'
+      });
+    } else {
+      const addedWager = await poolsData.addWager(poolId, { amount, description, users });
+
+      return status.created(res, { ...addedWager });
+    }
   }
 );
 

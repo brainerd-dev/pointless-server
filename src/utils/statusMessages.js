@@ -1,6 +1,7 @@
 const {
   SUCCESS,
   CREATED,
+  BAD_REQUEST,
   DOES_NOT_EXIST,
   CONFLICT,
   SERVER_ERROR
@@ -9,6 +10,8 @@ const {
 const success = (res, body) => res.status(SUCCESS).send(body);
 
 const created = (res, body) => res.status(CREATED).send(body);
+
+const badRequest = (res, body) => res.status(BAD_REQUEST).send(body);
 
 const doesNotExist = (res, type, property, container) =>
   res.status(DOES_NOT_EXIST).send({
@@ -25,6 +28,7 @@ const serverError = (res, error, message) => res.status(SERVER_ERROR).send({ mes
 module.exports = {
   success,
   created,
+  badRequest,
   doesNotExist,
   alreadyExists,
   serverError
