@@ -31,6 +31,15 @@ const deletePool = async poolId => {
   return await data.deleteOne(POOLS_COLLECTION, poolId);
 };
 
+const addUser = async (poolId, userEmail) => {
+  log.cool(`Adding User ${userEmail} to pool ${poolId}`);
+  return await data.addToSet(
+    POOLS_COLLECTION,
+    poolId,
+    { 'users': userEmail }
+  );
+};
+
 const addWager = async (poolId, wager) => {
   log.cool(`Adding Wager ${wager._id} to pool ${poolId}`);
   return await data.addToSet(
@@ -53,6 +62,7 @@ module.exports = {
   getPoolById,
   createPool,
   deletePool,
+  addUser,
   addWager,
   removeWager
 };
