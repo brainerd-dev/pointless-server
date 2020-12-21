@@ -45,6 +45,16 @@ pools.post('/', validator.body(postPoolBody), async (req, res) => {
   return status.created(res, { ...pool });
 });
 
+pools.delete('/:poolId',
+  validator.params(defaultPoolParams), async (req, res) => {
+    const { params: { poolId } } = req;
+
+    const deletedPool = await poolsData.deletePool(poolId);
+
+    return status.success(res, { deletedPool });
+  }
+);
+
 pools.post('/:poolId/wagers',
   validator.params(defaultPoolParams),
   validator.body(postWagerBody), async (req, res) => {

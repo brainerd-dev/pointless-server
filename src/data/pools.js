@@ -26,6 +26,11 @@ const createPool = async (name, createdBy, users) => {
   return await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
 };
 
+const deletePool = async poolId => {
+  log.cool(`Deleting Pool ${poolId}`);
+  return await data.deleteOne(POOLS_COLLECTION, poolId);
+};
+
 const addWager = async (poolId, wager) => {
   log.cool(`Adding Wager ${wager._id} to pool ${poolId}`);
   return await data.addToSet(
@@ -47,6 +52,7 @@ module.exports = {
   getUserPools,
   getPoolById,
   createPool,
+  deletePool,
   addWager,
   removeWager
 };
