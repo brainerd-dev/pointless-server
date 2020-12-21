@@ -31,13 +31,16 @@ pools.get('/:poolId', validator.params(defaultPoolParams), async (req, res) => {
   const { params: { poolId } } = req;
 
   const pool = await poolsData.getPoolById(poolId);
+
   return status.success(res, { ...pool });
 });
 
 pools.post('/', validator.body(postPoolBody), async (req, res) => {
-  const { body: { name, userEmail } } = req;
+  const { body: { name, createdBy, users } } = req;
+  const poolUsers = [createdBy, ...users];
 
-  const pool = await poolsData.createPool({ name, userEmail });
+  const pool = await poolsData.createPool(name, createdBy, poolUsers);
+
   return status.success(res, { ...pool });
 });
 

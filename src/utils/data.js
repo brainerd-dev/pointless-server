@@ -37,7 +37,7 @@ const insertOne = async (collectionName, document) => {
   return new Promise((resolve, reject) => {
     db.collection(collectionName)
       .insertOne(document, (err, result) => {
-        err ? reject(err) : resolve(((result | {}).ops || [])[0]);
+        err ? reject(err) : resolve(((result || {}).ops || [])[0]);
       });
   });
 };

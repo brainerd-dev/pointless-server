@@ -12,7 +12,8 @@ const defaultPoolParams = Joi.object({
 
 const postPoolBody = Joi.object({
   name: Joi.string().required(),
-  userEmail: Joi.string().required()
+  createdBy: Joi.string().required(),
+  users: Joi.array()
 });
 
 const patchWagersBody = Joi.object({
