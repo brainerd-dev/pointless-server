@@ -86,7 +86,12 @@ pools.post('/:poolId/wagers',
         message: 'User is not a member of this pool'
       });
     } else {
-      const addedWager = await poolsData.addWager(poolId, { amount, description, users });
+      const addedWager = await poolsData.addWager(poolId, {
+        amount,
+        description,
+        users,
+        isActive: false
+      });
 
       return status.created(res, { ...addedWager });
     }

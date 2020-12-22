@@ -1,7 +1,9 @@
 const { ObjectID } = require('mongodb');
 const data = require('../utils/data');
 const log = require('../utils/log');
+const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
 const { POOLS_COLLECTION } = require('../constants/collections');
+const { create } = require('lodash');
 
 const getUserPools = async (page, size, userEmail) => {
   log.cool(`Getting Pools for ${userEmail}`);
@@ -22,8 +24,23 @@ const getPoolById = async poolId => {
 };
 
 const createPool = async (name, createdBy, users) => {
-  log.cool(`Creating Pool "${name}" for user ${createdBy}`);
-  return await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
+  log.cool(`Creating Pool "${name}" for user ${createdBy}`, users);
+
+  const newPool = await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
+
+  users.forEach(userEmail => {
+    pusher.trigger(userEmail, pushEvents.POOL_CREATED, {
+      category: pushTypes.SUCCESS,
+      title: 'Pool Created',
+      message: userEmail === createdBy ? `Successfully created pool "${name}"` : `New pool created by ${createdBy}`
+    });
+  });
+
+  if (name === 'My Test Pool') {
+    deletePool(newPool._id);
+  }
+
+  return newPool;
 };
 
 const deletePool = async poolId => {
