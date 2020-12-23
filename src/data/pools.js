@@ -24,7 +24,7 @@ const getPoolById = async poolId => {
 };
 
 const createPool = async (name, createdBy, users) => {
-  log.cool(`Creating Pool "${name}" for user ${createdBy}`, users);
+  log.cool(`Creating Pool "${name}" for user ${createdBy}`);
 
   const newPool = await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
 

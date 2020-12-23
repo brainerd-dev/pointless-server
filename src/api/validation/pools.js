@@ -12,8 +12,7 @@ const defaultPoolParams = Joi.object({
 
 const postPoolBody = Joi.object({
   name: Joi.string().required(),
-  createdBy: Joi.string().required(),
-  users: Joi.array()
+  createdBy: Joi.string().required()
 });
 
 const postUserBody = Joi.object({

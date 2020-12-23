@@ -38,10 +38,9 @@ pools.get('/:poolId', validator.params(defaultPoolParams), async (req, res) => {
 });
 
 pools.post('/', validator.body(postPoolBody), async (req, res) => {
-  const { body: { name, createdBy, users } } = req;
-  const poolUsers = [createdBy, ...users];
+  const { body: { name, createdBy } } = req;
 
-  const pool = await poolsData.createPool(name, createdBy, poolUsers);
+  const pool = await poolsData.createPool(name, createdBy, [createdBy]);
 
   return status.created(res, { ...pool });
 });
