@@ -69,7 +69,7 @@ pools.post('/:poolId/users',
 pools.post('/:poolId/wagers',
   validator.params(defaultPoolParams),
   validator.body(postWagerBody), async (req, res) => {
-    const { params: { poolId }, body: { amount, description, users } } = req;
+    const { params: { poolId }, body: { amount, description, createdBy, users } } = req;
 
     const pool = await poolsData.getPoolById(poolId);
 
@@ -85,7 +85,7 @@ pools.post('/:poolId/wagers',
         message: 'User is not a member of this pool'
       });
     } else {
-      const addedWager = await poolsData.addWager(poolId, {
+      const addedWager = await poolsData.addWager(poolId, createdBy, {
         amount,
         description,
         users,

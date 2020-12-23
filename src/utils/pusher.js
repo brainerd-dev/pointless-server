@@ -12,10 +12,10 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-const POOL_CREATED = 'poolCreated';
+const NOTIFY = 'notify';
 
 const pushEvents = {
-  POOL_CREATED
+  NOTIFY
 };
 
 const SUCCESS = 'success';

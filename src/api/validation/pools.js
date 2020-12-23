@@ -22,6 +22,7 @@ const postUserBody = Joi.object({
 const postWagerBody = Joi.object({
   amount: Joi.number().required(),
   description: Joi.string().required(),
+  createdBy: Joi.string().required(),
   users: Joi.array().required()
 });
 

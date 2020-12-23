@@ -28,14 +28,6 @@ const createPool = async (name, createdBy, users) => {
 
   const newPool = await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
 
-  users.forEach(userEmail => {
-    pusher.trigger(userEmail, pushEvents.POOL_CREATED, {
-      category: pushTypes.SUCCESS,
-      title: 'Pool Created',
-      message: userEmail === createdBy ? `Successfully created pool "${name}"` : `New pool created by ${createdBy}`
-    });
-  });
-
   if (name === 'My Test Pool') {
     deletePool(newPool._id);
   }
@@ -57,8 +49,17 @@ const addUser = async (poolId, userEmail) => {
   );
 };
 
-const addWager = async (poolId, wager) => {
-  log.cool(`Adding Wager ${wager._id} to pool ${poolId}`);
+const addWager = async (poolId, createdBy, wager) => {
+  log.cool(`Adding Wager to pool ${poolId}`, wager);
+
+  wager.users.forEach(userEmail => {
+    pusher.trigger(userEmail, pushEvents.NOTIFY, {
+      category: pushTypes.SUCCESS,
+      title: 'Wager Created',
+      message: userEmail === createdBy ? `Successfully created wager` : `New pool created by ${createdBy}`
+    });
+  });
+
   return await data.addToSet(
     POOLS_COLLECTION,
     poolId, {
