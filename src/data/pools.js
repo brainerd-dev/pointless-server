@@ -3,7 +3,7 @@ const data = require('../utils/data');
 const log = require('../utils/log');
 const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
 const { POOLS_COLLECTION } = require('../constants/collections');
-const { create } = require('lodash');
+const { createNotification } = require('./notifications');
 
 const getUserPools = async (page, size, userEmail) => {
   log.cool(`Getting Pools for ${userEmail}`);
@@ -53,11 +53,13 @@ const addWager = async (poolId, createdBy, wager) => {
   log.cool(`Adding Wager to pool ${poolId}`, wager);
 
   wager.users.forEach(userEmail => {
-    pusher.trigger(userEmail, pushEvents.NOTIFY, {
+    pusher.trigger(userEmail, pushEvents.PUSH, {
       category: pushTypes.SUCCESS,
       title: 'Wager Created',
       message: userEmail === createdBy ? `Successfully created wager` : `New pool created by ${createdBy}`
     });
+
+    createNotification(userEmail, 'Wager Created', 'Someone wants to bet you');
   });
 
   return await data.addToSet(

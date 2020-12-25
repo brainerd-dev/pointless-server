@@ -12,9 +12,11 @@ const pusher = new Pusher({
   useTLS: true
 });
 
+const PUSH = 'push';
 const NOTIFY = 'notify';
 
 const pushEvents = {
+  PUSH,
   NOTIFY
 };
 

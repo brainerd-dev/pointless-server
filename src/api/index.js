@@ -8,6 +8,6 @@ router.get('/', (req, res) => {
 });
 
 router.use('/pools', require('./pools'));
-// router.use('/users', require('./users'));
+router.use('/notifications', require('./notifications'));
 
 module.exports = router;
