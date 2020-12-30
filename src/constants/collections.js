@@ -1,8 +1,10 @@
 
-const POOLS_COLLECTION = 'pools';
 const NOTIFICATIONS_COLLECTION = 'notifications';
+const POOLS_COLLECTION = 'pools';
+const USERS_COLLECTION = 'users';
 
 module.exports = {
+  NOTIFICATIONS_COLLECTION,
   POOLS_COLLECTION,
-  NOTIFICATIONS_COLLECTION
+  USERS_COLLECTION
 };

@@ -59,7 +59,7 @@ const addWager = async (poolId, createdBy, wager) => {
       message: userEmail === createdBy ? `Successfully created wager` : `New pool created by ${createdBy}`
     });
 
-    createNotification(userEmail, 'Wager Created', 'Someone wants to bet you');
+    createNotification(userEmail, 'Wager Created', `${createdBy} wants to bet you`);
   });
 
   return await data.addToSet(

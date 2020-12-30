@@ -7,7 +7,8 @@ router.get('/', (req, res) => {
   });
 });
 
-router.use('/pools', require('./pools'));
 router.use('/notifications', require('./notifications'));
+router.use('/pools', require('./pools'));
+router.use('/users', require('./users'));
 
 module.exports = router;
