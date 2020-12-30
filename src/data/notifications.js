@@ -1,3 +1,4 @@
+const { ObjectID } = require('mongodb');
 const data = require('../utils/data');
 const log = require('../utils/log');
 const { pusher, pushEvents } = require('../utils/pusher');
@@ -5,7 +6,8 @@ const { NOTIFICATIONS_COLLECTION } = require('../constants/collections');
 
 const getUserNotifications = async (page, size, userEmail) => {
   log.cool(`Getting Notifications for ${userEmail}`);
-  return await data.getSome(
+
+  const userNotifications = await data.getSome(
     NOTIFICATIONS_COLLECTION,
     page,
     size,
@@ -14,6 +16,18 @@ const getUserNotifications = async (page, size, userEmail) => {
     {},
     { _id: -1 }
   );
+
+  const notifications = {
+    ...userNotifications,
+    items: userNotifications.items.map(notification => {
+      return {
+        ...notification,
+        timestamp: ObjectID(notification._id).getTimestamp()
+      };
+    })
+  };
+
+  return notifications;
 };
 
 const createNotification = async (userEmail, title, message, link) => {

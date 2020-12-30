@@ -14,4 +14,4 @@ def test_getApiRoot():
   body = response.json()
 
   assert response.status_code == 200
-  assert body['message'] == f'Welcome to the Banana Peel API v{version}!'
+  assert body['message'] == f'Welcome to the Pointless API v{version}!'
