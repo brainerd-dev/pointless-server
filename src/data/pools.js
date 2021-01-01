@@ -42,15 +42,44 @@ const deletePool = async poolId => {
 
 const addUser = async (poolId, userEmail) => {
   log.cool(`Adding User ${userEmail} to pool ${poolId}`);
-  return await data.addToSet(
+
+  const pool = await getPoolById(poolId);
+
+  const newUser = await data.addToSet(
     POOLS_COLLECTION,
     poolId,
     { 'users': userEmail }
   );
+
+  pool.users.map(poolUser => {
+    pusher.trigger(poolUser, pushEvents.PUSH, {
+      category: pushTypes.SUCCESS,
+      title: 'User Added',
+      message: `${userEmail} added to ${pool.name} pool`
+    });
+
+    createNotification(
+      userEmail,
+      poolUser,
+      'New Pool Member',
+      `New user [${userEmail}] added to ${pool.name} pool`
+    );
+  });
+
+  return newUser;
 };
 
 const addWager = async (poolId, createdBy, wager) => {
   log.cool(`Adding Wager to pool ${poolId}`, wager);
+
+  const newWager = await data.addToSet(
+    POOLS_COLLECTION,
+    poolId, {
+    'wagers': {
+      _id: new ObjectID(),
+      ...wager
+    }
+  });
 
   wager.users.forEach(userEmail => {
     pusher.trigger(userEmail, pushEvents.PUSH, {
@@ -60,18 +89,17 @@ const addWager = async (poolId, createdBy, wager) => {
     });
 
     if (userEmail !== createdBy) {
-      createNotification(createdBy, userEmail, 'Wager Created', `${createdBy} wants to bet you`);
+      createNotification(
+        createdBy,
+        userEmail,
+        'Wager Created',
+        `${createdBy} wants to bet you ${wager.amount} pts`,
+        `${process.env.FRONTEND_URL}/`
+      );
     }
   });
 
-  return await data.addToSet(
-    POOLS_COLLECTION,
-    poolId, {
-    'wagers': {
-      _id: new ObjectID(),
-      ...wager
-    }
-  });
+  return newWager;
 };
 
 const removeWager = async (poolId, wagerId) => {
