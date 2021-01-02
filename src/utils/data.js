@@ -114,7 +114,6 @@ const updateOne = async (collectionName, id, update) => {
           { $set: update },
           (err, result) => {
             const { matchedCount, modifiedCount } = result || {};
-            console.log(result.ops);
             if (err) reject(err);
             const didUpdate = matchedCount === 1 && modifiedCount === 1;
             resolve({ didUpdate, id });
@@ -123,7 +122,28 @@ const updateOne = async (collectionName, id, update) => {
     } catch (err) {
       reject(err);
     }
-  })
+  });
+};
+
+const updateMany = async (collectionName, query, update) => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.collection(collectionName)
+        .updateMany(
+          query,
+          update,
+          (err, result) => {
+            const { matchedCount, modifiedCount } = result || {};
+            console.log(result);
+            if (err) reject(err);
+            const didUpdateAll = matchedCount === modifiedCount;
+            resolve({ didUpdateAll });
+          }
+        );
+    } catch (err) {
+      reject(err);
+    }
+  });
 };
 
 const saveObject = async(collectionName, item) => {
@@ -192,6 +212,7 @@ module.exports = {
   getByProperties,
   getAllByProperty,
   updateOne,
+  updateMany,
   saveObject,
   deleteOne,
   addToSet,

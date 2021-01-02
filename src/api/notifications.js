@@ -43,6 +43,15 @@ notifications.post('/invitation', validator.body(postInvitationBody), async (req
   return status.created(res, { to, from, subject, text, html });
 });
 
+notifications.patch('/readAll', validator.body(patchNotificationBody), async (req, res) => {
+    const { body: { userEmail } } = req;
+
+    const notifications = await notificationsData.markAllAsRead(userEmail);
+
+    return status.success(res, { notifications });
+  }
+);
+
 notifications.patch('/:notificationId/read',
   validator.params(defaultNotificationParams),
   validator.body(patchNotificationBody),
@@ -52,7 +61,8 @@ notifications.patch('/:notificationId/read',
     const notification = await notificationsData.markAsRead(userEmail, notificationId);
 
     return status.success(res, { notification });
-  });
+  }
+);
 
 notifications.patch('/:notificationId/dismiss',
   validator.params(defaultNotificationParams),
@@ -63,6 +73,7 @@ notifications.patch('/:notificationId/dismiss',
     const notification = await notificationsData.dismiss(userEmail, notificationId);
 
     return status.success(res, { notification });
-  });
+  }
+);
 
 module.exports = notifications;

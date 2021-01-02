@@ -1,7 +1,7 @@
 const { ObjectID } = require('mongodb');
 const data = require('../utils/data');
 const log = require('../utils/log');
-const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
+const { pusher, pushEvents } = require('../utils/pusher');
 const { NOTIFICATIONS_COLLECTION } = require('../constants/collections');
 const { getUserByEmail } = require('./users');
 
@@ -45,6 +45,17 @@ const createNotification = async (createdBy, userEmail, title, message, link) =>
   return newNotification;
 };
 
+const markAllAsRead = async userEmail => {
+  log.cool(`Marking all notifications for ${userEmail} as read`);
+
+  const updatedNotification = await data.updateMany(NOTIFICATIONS_COLLECTION,
+    { userEmail },
+    { $set: { isRead: true } }
+  );
+
+  console.log('Updated Notification', updatedNotification);
+};
+
 const markAsRead = async (userEmail, notificationId) => {
   log.cool(`Marking notification for ${userEmail} as read`, notificationId);
 
@@ -54,11 +65,11 @@ const markAsRead = async (userEmail, notificationId) => {
 
   console.log('Updated Notification', updatedNotification);
 
-  pusher.trigger(userEmail, pushEvents.PUSH, {
-    category: pushTypes.SUCCESS,
-    title: 'Notification Read',
-    message: `<i>${userEmail}</i> marked <i>${notificationId}</i> as read`
-  });
+  // pusher.trigger(userEmail, pushEvents.PUSH, {
+  //   category: pushTypes.SUCCESS,
+  //   title: 'Notification Read',
+  //   message: `<i>${userEmail}</i> marked <i>${notificationId}</i> as read`
+  // });
 };
 
 const dismiss = async (userEmail, notificationId) => {
@@ -70,16 +81,17 @@ const dismiss = async (userEmail, notificationId) => {
 
   console.log('Updated Notification', updatedNotification);
 
-  pusher.trigger(userEmail, pushEvents.PUSH, {
-    category: pushTypes.SUCCESS,
-    title: 'Notification Dismissed',
-    message: `<i>${userEmail}</i> dismissed <i>${notificationId}</i>`
-  });
+  // pusher.trigger(userEmail, pushEvents.PUSH, {
+  //   category: pushTypes.SUCCESS,
+  //   title: 'Notification Dismissed',
+  //   message: `<i>${userEmail}</i> dismissed <i>${notificationId}</i>`
+  // });
 };
 
 module.exports = {
   getUserNotifications,
   createNotification,
+  markAllAsRead,
   markAsRead,
   dismiss
 };
