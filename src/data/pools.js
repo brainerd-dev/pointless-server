@@ -55,14 +55,14 @@ const addUser = async (poolId, userEmail) => {
     pusher.trigger(poolUser, pushEvents.PUSH, {
       category: pushTypes.SUCCESS,
       title: 'User Added',
-      message: `${userEmail} added to ${pool.name} pool`
+      message: `<i>${userEmail}</i> joined the <i>${pool.name}</i> pool`
     });
 
     createNotification(
       userEmail,
       poolUser,
       'New Pool Member',
-      `New user [${userEmail}] added to ${pool.name} pool`
+      `<i>${userEmail}</i> joined <i>${pool.name}</i> pool`
     );
   });
 
