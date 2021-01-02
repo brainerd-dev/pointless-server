@@ -4,7 +4,12 @@ const notificationsData = require('../data/notifications');
 const getInviteHtml = require('../utils/getInviteHtml');
 const status = require('../utils/statusMessages');
 const { validator } = require('../utils/validator');
-const { getUserNotificationsQuery, postInvitationBody } = require('./validation/notifications');
+const {
+  getUserNotificationsQuery,
+  postInvitationBody,
+  defaultNotificationParams,
+  patchNotificationBody
+} = require('./validation/notifications');
 
 notifications.get('/', validator.query(getUserNotificationsQuery), async (req, res) => {
   const { query: { pageNum, pageSize, userEmail } } = req;
@@ -37,5 +42,27 @@ notifications.post('/invitation', validator.body(postInvitationBody), async (req
 
   return status.created(res, { to, from, subject, text, html });
 });
+
+notifications.patch('/:notificationId/read',
+  validator.params(defaultNotificationParams),
+  validator.body(patchNotificationBody),
+  async (req, res) => {
+    const { params: { notificationId }, body: { userEmail } } = req;
+
+    const notification = await notificationsData.markAsRead(userEmail, notificationId);
+
+    return status.success(res, { notification });
+  });
+
+notifications.patch('/:notificationId/dismiss',
+  validator.params(defaultNotificationParams),
+  validator.body(patchNotificationBody),
+  async (req, res) => {
+    const { params: { notificationId }, body: { userEmail } } = req;
+
+    const notification = await notificationsData.dismiss(userEmail, notificationId);
+
+    return status.success(res, { notification });
+  });
 
 module.exports = notifications;

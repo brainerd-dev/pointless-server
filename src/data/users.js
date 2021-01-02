@@ -11,7 +11,6 @@ const createUser = async user => {
 };
 
 const getUserByEmail = async email => {
-  log.cool('Getting user by email', email);
   return await data.getByProperty(USERS_COLLECTION, 'email', email);
 };
 

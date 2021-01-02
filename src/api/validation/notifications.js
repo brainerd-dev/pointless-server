@@ -12,7 +12,17 @@ const postInvitationBody = Joi.object({
   location: Joi.object()
 });
 
+const defaultNotificationParams = Joi.object({
+  notificationId: Joi.string().required()
+});
+
+const patchNotificationBody = Joi.object({
+  userEmail: Joi.string().required()
+});
+
 module.exports = {
   getUserNotificationsQuery,
-  postInvitationBody
+  postInvitationBody,
+  defaultNotificationParams,
+  patchNotificationBody
 };

@@ -42,14 +42,13 @@ const insertOne = async (collectionName, document) => {
   });
 };
 
-const getSome = async (collectionName, page, size, identifier, idValue, projection = {}, sort = {}) => {
+const getSome = async (collectionName, page, size, query, projection = {}, sort = {}) => {
   const collection = db.collection(collectionName);
   const totalItems = await collection.countDocuments({});
   const totalPages = calculateTotalPages(totalItems, size);
   const sorting = sort || { $natural: -1 };
 
   return new Promise((resolve, reject) => {
-    const query = identifier && idValue ? { [identifier]: idValue } : {};
     collection
       .find(query)
       .project(projection)
@@ -112,12 +111,13 @@ const updateOne = async (collectionName, id, update) => {
       db.collection(collectionName)
         .updateOne(
           { _id: ObjectId(id) },
-          { $addToSet: update },
+          { $set: update },
           (err, result) => {
             const { matchedCount, modifiedCount } = result || {};
+            console.log(result.ops);
             if (err) reject(err);
-            const alreadyExists = matchedCount === 1 && modifiedCount === 0;
-            resolve({ alreadyExists, id });
+            const didUpdate = matchedCount === 1 && modifiedCount === 1;
+            resolve({ didUpdate, id });
           }
         );
     } catch (err) {

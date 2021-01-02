@@ -11,8 +11,7 @@ const getUserPools = async (page, size, userEmail) => {
     POOLS_COLLECTION,
     page,
     size,
-    'users',
-    userEmail,
+    { users: userEmail },
     { wagers: 0 },
     { poolId: -1 }
   );
@@ -52,18 +51,20 @@ const addUser = async (poolId, userEmail) => {
   );
 
   pool.users.map(poolUser => {
-    pusher.trigger(poolUser, pushEvents.PUSH, {
-      category: pushTypes.SUCCESS,
-      title: 'User Added',
-      message: `<i>${userEmail}</i> joined the <i>${pool.name}</i> pool`
-    });
-
-    createNotification(
-      userEmail,
-      poolUser,
-      'New Pool Member',
-      `<i>${userEmail}</i> joined <i>${pool.name}</i> pool`
-    );
+    if (poolUser !== userEmail) {
+      pusher.trigger(poolUser, pushEvents.PUSH, {
+        category: pushTypes.SUCCESS,
+        title: 'User Added',
+        message: `<i>${userEmail}</i> joined the <i>${pool.name}</i> pool`
+      });
+  
+      createNotification(
+        userEmail,
+        poolUser,
+        'New Pool Member',
+        `<i>${userEmail}</i> joined <i>${pool.name}</i> pool`
+      );
+    }
   });
 
   return newUser;
