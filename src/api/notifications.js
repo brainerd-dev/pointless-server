@@ -38,19 +38,28 @@ notifications.post('/invitation', validator.body(postInvitationBody), async (req
   const html = getInviteHtml(poolId, location);
 
   emailClient.setApiKey(process.env.SENDGRID_API_KEY);
-  emailClient.send({ to, from, subject, text, html });
+  emailClient
+    .send({ to, from, subject, text, html })
+    .then(() => {
+      console.log('Email sent ', { to, from, subject, text });
+    }, error => {
+      console.error(error);
+
+      if (error.response) {
+        console.error(error.response.body)
+      }
+    });
 
   return status.created(res, { to, from, subject, text, html });
 });
 
 notifications.patch('/readAll', validator.body(patchNotificationBody), async (req, res) => {
-    const { body: { userEmail } } = req;
+  const { body: { userEmail } } = req;
 
-    const notifications = await notificationsData.markAllAsRead(userEmail);
+  const notifications = await notificationsData.markAllAsRead(userEmail);
 
-    return status.success(res, { notifications });
-  }
-);
+  return status.success(res, { notifications });
+});
 
 notifications.patch('/:notificationId/read',
   validator.params(defaultNotificationParams),
