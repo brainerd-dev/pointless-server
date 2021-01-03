@@ -106,7 +106,7 @@ const addWager = async (poolId, createdBy, wager) => {
     pusher.trigger(userEmail, pushEvents.PUSH, {
       category: pushTypes.SUCCESS,
       title: 'Wager Created',
-      message: userEmail === createdBy ? `Successfully created wager` : `New pool created by ${createdBy}`
+      message: userEmail === createdBy ? `Successfully created wager` : `New wager created by ${createdBy}`
     });
 
     if (userEmail !== createdBy) {
@@ -115,7 +115,7 @@ const addWager = async (poolId, createdBy, wager) => {
         userEmail,
         'Wager Created',
         `${createdBy} wants to bet you ${wager.amount} pts`,
-        `${process.env.FRONTEND_URL}/`
+        `${process.env.FRONTEND_URL}/pools/${poolId}/wagers/${newWager.addition.wagers._id}`
       );
     }
   });
