@@ -4,6 +4,7 @@ const log = require('../utils/log');
 const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
 const { POOLS_COLLECTION } = require('../constants/collections');
 const { createNotification } = require('./notifications');
+const { getUserByEmail } = require('./users');
 
 const getUserPools = async (page, size, userEmail) => {
   log.cool(`Getting Pools for ${userEmail}`);
@@ -25,7 +26,19 @@ const getPoolById = async poolId => {
 const createPool = async (name, createdBy, users) => {
   log.cool(`Creating Pool "${name}" for user ${createdBy}`);
 
-  const newPool = await data.insertOne(POOLS_COLLECTION, { name, createdBy, users });
+  const startingPoints = 500;
+  const user = await getUserByEmail(createdBy);
+
+  const newPool = await data.insertOne(POOLS_COLLECTION, {
+    name,
+    createdBy,
+    users,
+    minimumBet: 5,
+    startingPoints,
+    pointTotals: [
+      { [user._id]: startingPoints }
+    ]
+  });
 
   if (name === 'My Test Pool') {
     deletePool(newPool._id);
@@ -43,11 +56,18 @@ const addUser = async (poolId, userEmail) => {
   log.cool(`Adding User ${userEmail} to pool ${poolId}`);
 
   const pool = await getPoolById(poolId);
+  const user = await getUserByEmail(userEmail);
 
   const newUser = await data.addToSet(
     POOLS_COLLECTION,
     poolId,
     { 'users': userEmail }
+  );
+
+  await data.addToSet(
+    POOLS_COLLECTION,
+    poolId,
+    { pointTotals: { [user._id]: pool.startingPoints } }
   );
 
   pool.users.map(poolUser => {
