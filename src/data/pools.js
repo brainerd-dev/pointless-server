@@ -35,9 +35,9 @@ const createPool = async (name, createdBy, users) => {
     users,
     minimumBet: 5,
     startingPoints,
-    pointTotals: [
-      { [user._id]: startingPoints }
-    ]
+    pointTotals: {
+      [user._id]: startingPoints
+    }
   });
 
   if (name === 'My Test Pool') {
@@ -61,13 +61,18 @@ const addUser = async (poolId, userEmail) => {
   const newUser = await data.addToSet(
     POOLS_COLLECTION,
     poolId,
-    { 'users': userEmail }
+    { users: userEmail }
   );
 
-  await data.addToSet(
+  await data.updateOne(
     POOLS_COLLECTION,
     poolId,
-    { pointTotals: { [user._id]: pool.startingPoints } }
+    { 
+      pointTotals: {
+        ...pool.pointTotals,
+        [user._id]: pool.startingPoints 
+      }
+    }
   );
 
   pool.users.map(poolUser => {
@@ -102,6 +107,8 @@ const addWager = async (poolId, createdBy, wager) => {
     }
   });
 
+  await updateUserPoints(poolId, createdBy, wager.amount);
+
   wager.users.forEach(userEmail => {
     pusher.trigger(userEmail, pushEvents.PUSH, {
       category: pushTypes.SUCCESS,
@@ -131,6 +138,22 @@ const removeWager = async (poolId, wagerId) => {
 const acceptWager = async (poolId, wagerId, updatedWagers) => {
   log.cool(`Accepting Wager ${wagerId} from pool ${poolId}`);
   return await data.updateOne(POOLS_COLLECTION, poolId, { wagers: updatedWagers });
+};
+
+const updateUserPoints = async (poolId, userEmail, points) => {
+  log.cool(`Updating user ${userEmail} points ${points}`);
+
+  const pool = await getPoolById(poolId);
+  const user = await getUserByEmail(userEmail);
+
+  const updatedPointTotals = {
+    pointTotals: {
+      ...pool.pointTotals,
+      [user._id]: pool.pointTotals[user._id] - points
+    }
+  };
+
+  return await data.updateOne(POOLS_COLLECTION, poolId, updatedPointTotals);
 };
 
 module.exports = {
