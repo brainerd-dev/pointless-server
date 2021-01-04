@@ -48,44 +48,26 @@ const createNotification = async (createdBy, userEmail, title, message, link) =>
 const markAllAsRead = async userEmail => {
   log.cool(`Marking all notifications for ${userEmail} as read`);
 
-  const updatedNotification = await data.updateMany(NOTIFICATIONS_COLLECTION,
+  await data.updateMany(NOTIFICATIONS_COLLECTION,
     { userEmail },
     { $set: { isRead: true } }
   );
-
-  console.log('Updated Notification', updatedNotification);
 };
 
 const markAsRead = async (userEmail, notificationId) => {
   log.cool(`Marking notification for ${userEmail} as read`, notificationId);
 
-  const updatedNotification = await data.updateOne(NOTIFICATIONS_COLLECTION, notificationId, {
+  await data.updateOne(NOTIFICATIONS_COLLECTION, notificationId, {
     isRead: true
   });
-
-  console.log('Updated Notification', updatedNotification);
-
-  // pusher.trigger(userEmail, pushEvents.PUSH, {
-  //   category: pushTypes.SUCCESS,
-  //   title: 'Notification Read',
-  //   message: `<i>${userEmail}</i> marked <i>${notificationId}</i> as read`
-  // });
 };
 
 const dismiss = async (userEmail, notificationId) => {
   log.cool(`Dismissing notification for ${userEmail}`, notificationId);
 
-  const updatedNotification = await data.updateOne(NOTIFICATIONS_COLLECTION, notificationId, {
+  await data.updateOne(NOTIFICATIONS_COLLECTION, notificationId, {
     isDismissed: true
   });
-
-  console.log('Updated Notification', updatedNotification);
-
-  // pusher.trigger(userEmail, pushEvents.PUSH, {
-  //   category: pushTypes.SUCCESS,
-  //   title: 'Notification Dismissed',
-  //   message: `<i>${userEmail}</i> dismissed <i>${notificationId}</i>`
-  // });
 };
 
 module.exports = {

@@ -134,7 +134,6 @@ const updateMany = async (collectionName, query, update) => {
           update,
           (err, result) => {
             const { matchedCount, modifiedCount } = result || {};
-            console.log(result);
             if (err) reject(err);
             const didUpdateAll = matchedCount === modifiedCount;
             resolve({ didUpdateAll });

@@ -1,4 +1,4 @@
-const { ObjectID } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 const data = require('../utils/data');
 const log = require('../utils/log');
 const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
@@ -97,7 +97,7 @@ const addWager = async (poolId, createdBy, wager) => {
     POOLS_COLLECTION,
     poolId, {
     'wagers': {
-      _id: new ObjectID(),
+      _id: new ObjectId(),
       ...wager
     }
   });
@@ -125,7 +125,12 @@ const addWager = async (poolId, createdBy, wager) => {
 
 const removeWager = async (poolId, wagerId) => {
   log.cool(`Removing Wager ${wagerId} from pool ${poolId}`);
-  return await data.pullFromSet(POOLS_COLLECTION, poolId, { wagers: { _id: ObjectID(wagerId) } });
+  return await data.pullFromSet(POOLS_COLLECTION, poolId, { wagers: { _id: ObjectId(wagerId) } });
+};
+
+const acceptWager = async (poolId, wagerId, updatedWagers) => {
+  log.cool(`Accepting Wager ${wagerId} from pool ${poolId}`);
+  return await data.updateOne(POOLS_COLLECTION, poolId, { wagers: updatedWagers });
 };
 
 module.exports = {
@@ -135,5 +140,6 @@ module.exports = {
   deletePool,
   addUser,
   addWager,
-  removeWager
+  removeWager,
+  acceptWager
 };

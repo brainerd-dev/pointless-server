@@ -31,11 +31,16 @@ const defaultWagerParams = Joi.object({
   wagerId: Joi.string().required()
 });
 
+const patchWagerBody = Joi.object({
+  userEmail: Joi.string().required()
+});
+
 module.exports = {
   getUserPoolsQuery,
   defaultPoolParams,
   postPoolBody,
   postUserBody,
   postWagerBody,
-  defaultWagerParams
+  defaultWagerParams,
+  patchWagerBody
 };

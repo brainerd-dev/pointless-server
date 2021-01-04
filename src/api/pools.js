@@ -1,4 +1,5 @@
 const pools = require('express').Router();
+const ObjectId = require('mongodb').ObjectId;
 const poolsData = require('../data/pools');
 const status = require('../utils/statusMessages');
 const { validator } = require('../utils/validator');
@@ -8,7 +9,8 @@ const {
   postPoolBody,
   postUserBody,
   postWagerBody,
-  defaultWagerParams
+  defaultWagerParams,
+  patchWagerBody
 } = require('./validation/pools');
 
 pools.get('/', validator.query(getUserPoolsQuery), async (req, res) => {
@@ -89,7 +91,8 @@ pools.post('/:poolId/wagers',
         amount,
         description,
         users,
-        isActive: false
+        isActive: false,
+        activeUsers: [createdBy]
       });
 
       return status.created(res, { ...addedWager });
@@ -104,6 +107,36 @@ pools.delete('/:poolId/wagers/:wagerId',
     const removedWager = await poolsData.removeWager(poolId, wagerId);
 
     return status.success(res, { ...removedWager });
+  }
+);
+
+pools.patch('/:poolId/wagers/:wagerId/accept',
+  validator.params(defaultWagerParams),
+  validator.body(patchWagerBody), async (req, res) => {
+    const { params: { poolId, wagerId }, body: { userEmail } } = req;
+
+    const pool = await poolsData.getPoolById(poolId);
+    const wager = pool.wagers.find(w => ObjectId(w._id).equals(ObjectId(wagerId)));
+
+    if (!!wager) {
+      const updatedWagers = [
+        ...pool.wagers.filter(wager => !ObjectId(wager._id).equals(ObjectId(wagerId))),
+        {
+          ...wager,
+          isActive: true,
+          activeUsers: [
+            ...wager.activeUsers,
+            userEmail
+          ]
+        }
+      ];
+
+      const updatedWager = await poolsData.acceptWager(poolId, wagerId, updatedWagers);
+
+      return status.success(res, { updatedWager });
+    }
+
+    return status.doesNotExist(res, 'Wager', 'wagers', 'pool');
   }
 );
 
