@@ -1,8 +1,8 @@
 const pools = require('express').Router();
-const ObjectId = require('mongodb').ObjectId;
 const poolsData = require('../data/pools');
 const status = require('../utils/statusMessages');
 const { validator } = require('../utils/validator');
+const { getWagerById, getOtherWagers, getOtherUser } = require('../utils/pools');
 const {
   getUserPoolsQuery,
   defaultPoolParams,
@@ -92,6 +92,7 @@ pools.post('/:poolId/wagers',
         description,
         users,
         isActive: false,
+        isComplete: false,
         activeUsers: [createdBy]
       });
 
@@ -116,11 +117,11 @@ pools.patch('/:poolId/wagers/:wagerId/accept',
     const { params: { poolId, wagerId }, body: { userEmail } } = req;
 
     const pool = await poolsData.getPoolById(poolId);
-    const wager = pool.wagers.find(w => ObjectId(w._id).equals(ObjectId(wagerId)));
+    const wager = getWagerById(pool, wagerId);
 
     if (!!wager) {
       const updatedWagers = [
-        ...pool.wagers.filter(wager => !ObjectId(wager._id).equals(ObjectId(wagerId))),
+        ...getOtherWagers(pool, wagerId),
         {
           ...wager,
           isActive: true,
@@ -131,7 +132,38 @@ pools.patch('/:poolId/wagers/:wagerId/accept',
         }
       ];
 
-      const updatedWager = await poolsData.acceptWager(poolId, wagerId, updatedWagers);
+      const updatedWager = await poolsData.updateWager(poolId, wagerId, updatedWagers);
+
+      return status.success(res, { updatedWager });
+    }
+
+    return status.doesNotExist(res, 'Wager', 'wagers', 'pool');
+  }
+);
+
+pools.patch('/:poolId/wagers/:wagerId/complete',
+  validator.params(defaultWagerParams),
+  validator.body(patchWagerBody), async (req, res) => {
+    const { params: { poolId, wagerId }, body: { userEmail } } = req;
+
+    const pool = await poolsData.getPoolById(poolId);
+    const wager = getWagerById(pool, wagerId);
+    const losingUser = getOtherUser(wager, userEmail);
+
+    if (!!wager) {
+      const updatedWagers = [
+        ...getOtherWagers(pool, wagerId),
+        {
+          ...wager,
+          isComplete: true,
+          winners: [userEmail]
+        }
+      ];
+
+      const updatedWager = await poolsData.updateWager(poolId, wagerId, updatedWagers);
+      
+      await poolsData.updateUserPoints(poolId, losingUser, -1 * wager.amount);
+      await poolsData.updateUserPoints(poolId, userEmail, wager.amount);
 
       return status.success(res, { updatedWager });
     }

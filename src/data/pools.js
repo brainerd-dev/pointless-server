@@ -135,8 +135,8 @@ const removeWager = async (poolId, wagerId) => {
   return await data.pullFromSet(POOLS_COLLECTION, poolId, { wagers: { _id: ObjectId(wagerId) } });
 };
 
-const acceptWager = async (poolId, wagerId, updatedWagers) => {
-  log.cool(`Accepting Wager ${wagerId} from pool ${poolId}`);
+const updateWager = async (poolId, wagerId, updatedWagers) => {
+  log.cool(`Updating Wager ${wagerId} in pool ${poolId}`);
   return await data.updateOne(POOLS_COLLECTION, poolId, { wagers: updatedWagers });
 };
 
@@ -149,7 +149,7 @@ const updateUserPoints = async (poolId, userEmail, points) => {
   const updatedPointTotals = {
     pointTotals: {
       ...pool.pointTotals,
-      [user._id]: pool.pointTotals[user._id] - points
+      [user._id]: pool.pointTotals[user._id] + points
     }
   };
 
@@ -164,5 +164,6 @@ module.exports = {
   addUser,
   addWager,
   removeWager,
-  acceptWager
+  updateWager,
+  updateUserPoints
 };
