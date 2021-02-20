@@ -35,6 +35,11 @@ const patchWagerBody = Joi.object({
   userEmail: Joi.string().required()
 });
 
+const completeWagerBody = Joi.object({
+  completedBy: Joi.string().required(),
+  winnerEmail: Joi.string().required()
+});
+
 module.exports = {
   getUserPoolsQuery,
   defaultPoolParams,
@@ -42,5 +47,6 @@ module.exports = {
   postUserBody,
   postWagerBody,
   defaultWagerParams,
-  patchWagerBody
+  patchWagerBody,
+  completeWagerBody
 };

@@ -2,7 +2,7 @@ const pools = require('express').Router();
 const poolsData = require('../data/pools');
 const status = require('../utils/statusMessages');
 const { validator } = require('../utils/validator');
-const { getWagerById, getOtherWagers, getOtherUser } = require('../utils/pools');
+const { getWagerById } = require('../utils/pools');
 const {
   getUserPoolsQuery,
   defaultPoolParams,
@@ -10,7 +10,8 @@ const {
   postUserBody,
   postWagerBody,
   defaultWagerParams,
-  patchWagerBody
+  patchWagerBody,
+  completeWagerBody
 } = require('./validation/pools');
 
 pools.get('/', validator.query(getUserPoolsQuery), async (req, res) => {
@@ -120,21 +121,18 @@ pools.patch('/:poolId/wagers/:wagerId/accept',
     const wager = getWagerById(pool, wagerId);
 
     if (!!wager) {
-      const updatedWagers = [
-        ...getOtherWagers(pool, wagerId),
-        {
-          ...wager,
-          isActive: true,
-          activeUsers: [
-            ...wager.activeUsers,
-            userEmail
-          ]
-        }
-      ];
+      const updatedWager = {
+        ...wager,
+        isActive: true,
+        activeUsers: [
+          ...wager.activeUsers,
+          userEmail
+        ]
+      };
 
-      const updatedWager = await poolsData.updateWager(poolId, wagerId, updatedWagers);
+      const updates = await poolsData.acceptWager(pool, updatedWager);
 
-      return status.success(res, { updatedWager });
+      return status.success(res, { updatedWager: updates });
     }
 
     return status.doesNotExist(res, 'Wager', 'wagers', 'pool');
@@ -143,29 +141,24 @@ pools.patch('/:poolId/wagers/:wagerId/accept',
 
 pools.patch('/:poolId/wagers/:wagerId/complete',
   validator.params(defaultWagerParams),
-  validator.body(patchWagerBody), async (req, res) => {
-    const { params: { poolId, wagerId }, body: { userEmail } } = req;
+  validator.body(completeWagerBody), async (req, res) => {
+    const { params: { poolId, wagerId }, body: { completedBy, winners } } = req;
 
     const pool = await poolsData.getPoolById(poolId);
     const wager = getWagerById(pool, wagerId);
-    const losingUser = getOtherUser(wager, userEmail);
 
     if (!!wager) {
-      const updatedWagers = [
-        ...getOtherWagers(pool, wagerId),
-        {
-          ...wager,
-          isComplete: true,
-          winners: [userEmail]
-        }
-      ];
+      const updatedWager = {
+        ...wager,
+        isComplete: true,
+        winners
+      };
 
-      const updatedWager = await poolsData.updateWager(poolId, wagerId, updatedWagers);
-      
-      await poolsData.updateUserPoints(poolId, losingUser, -1 * wager.amount);
-      await poolsData.updateUserPoints(poolId, userEmail, wager.amount);
+      const updates = await poolsData.completeWager(pool, updatedWager, completedBy);
 
-      return status.success(res, { updatedWager });
+      await poolsData.transferPoints(poolId, winners, wager.amount);
+
+      return status.success(res, { updatedWager: updates });
     }
 
     return status.doesNotExist(res, 'Wager', 'wagers', 'pool');

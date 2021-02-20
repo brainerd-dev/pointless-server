@@ -8,12 +8,12 @@ const getOtherWagers = (pool, wagerId) => {
   return pool.wagers.filter(wager => !ObjectId(wager._id).equals(ObjectId(wagerId)));
 };
 
-const getOtherUser = (wager, winningUser) => {
-  return wager.activeUsers.find(userEmail => userEmail !== winningUser);
+const getOtherUsers = (wager, winningUsers) => {
+  return wager.activeUsers.find(userEmail => !winningUsers.includes(userEmail));
 };
 
 module.exports = {
   getWagerById,
   getOtherWagers,
-  getOtherUser
+  getOtherUsers
 };
