@@ -1,7 +1,7 @@
 const ObjectId = require('mongodb').ObjectId;
 const data = require('../utils/data');
 const log = require('../utils/log');
-const { getOtherWagers } = require('../utils/pools');
+const { getOtherWagers, getWagerById } = require('../utils/pools');
 const { pusher, pushEvents, pushTypes } = require('../utils/pusher');
 const { POOLS_COLLECTION } = require('../constants/collections');
 const { createNotification } = require('./notifications');
@@ -24,10 +24,9 @@ const getPoolById = async poolId => {
   return await data.getById(POOLS_COLLECTION, poolId);
 };
 
-const createPool = async (name, createdBy, users) => {
+const createPool = async (name, createdBy, users, startingPoints = 500) => {
   log.cool(`Creating Pool "${name}" for user ${createdBy}`);
 
-  const startingPoints = 500;
   const user = await getUserByEmail(createdBy);
 
   const newPool = await data.insertOne(POOLS_COLLECTION, {
@@ -38,6 +37,9 @@ const createPool = async (name, createdBy, users) => {
     startingPoints,
     pointTotals: {
       [user._id]: startingPoints
+    },
+    pendingPoints: {
+      [user._id]: 0
     }
   });
 
@@ -72,6 +74,10 @@ const addUser = async (poolId, userEmail) => {
       pointTotals: {
         ...pool.pointTotals,
         [user._id]: pool.startingPoints
+      },
+      pendingPoints: {
+        ...pool.pendingPoints,
+        [user._id]: 0
       }
     }
   );
@@ -134,6 +140,14 @@ const addWager = async (poolId, createdBy, wager) => {
 
 const removeWager = async (poolId, wagerId) => {
   log.cool(`Removing Wager ${wagerId} from pool ${poolId}`);
+
+  const pool = await getPoolById(poolId);
+  const wager = await getWagerById(pool, wagerId);
+
+  await Promise.all(wager.users.map(async userEmail => {
+    await addUserPoints(poolId, userEmail, wager.amount);
+  }));
+
   return await data.pullFromSet(POOLS_COLLECTION, poolId, { wagers: { _id: ObjectId(wagerId) } });
 };
 
@@ -207,17 +221,47 @@ const updateUserPoints = async (poolId, userEmail, points) => {
   return await data.updateOne(POOLS_COLLECTION, poolId, updatedPointTotals);
 };
 
+const updatePendingPoints = async (poolId, userEmail, points) => {
+  log.cool(`Updating user ${userEmail} pending points ${points}`);
+
+  const pool = await getPoolById(poolId);
+  const user = await getUserByEmail(userEmail);
+
+  const updatedPendingPoints = {
+    pendingPoints: {
+      ...pool.pendingPoints,
+      [user._id]: pool.pendingPoints[user._id] + points
+    }
+  };
+
+  return await data.updateOne(POOLS_COLLECTION, poolId, updatedPendingPoints);
+};
+
 const addUserPoints = async (poolId, userEmail, points) => {
-  await updateUserPoints(poolId, userEmail, points);
+  return Promise.all([
+    updateUserPoints(poolId, userEmail, points),
+    subtractPendingPoints(poolId, userEmail, points)
+  ]);
 };
 
 const subtractUserPoints = async (poolId, userEmail, points) => {
-  await updateUserPoints(poolId, userEmail, -1 * points);
+  return Promise.all([
+    updateUserPoints(poolId, userEmail, -1 * points),
+    addPendingPoints(poolId, userEmail, points)
+  ]);
 };
 
-const transferPoints = async (poolId, winners, points) => {
+const addPendingPoints = async (poolId, userEmail, points) => {
+  await updatePendingPoints(poolId, userEmail, points);
+};
+
+const subtractPendingPoints = async (poolId, userEmail, points) => {
+  await updatePendingPoints(poolId, userEmail, -1 * points);
+};
+
+const transferWinnerPoints = async (poolId, winners, points) => {
   await Promise.all(winners.forEach(async winnerEmail => {
-    await updateUserPoints(poolId, winnerEmail, points);
+    await addUserPoints(poolId, winnerEmail, points);
   }));
 };
 
@@ -232,7 +276,8 @@ module.exports = {
   acceptWager,
   completeWager,
   updateUserPoints,
+  updatePendingPoints,
   addUserPoints,
   subtractUserPoints,
-  transferPoints
+  transferWinnerPoints
 };

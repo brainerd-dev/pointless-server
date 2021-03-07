@@ -37,7 +37,7 @@ const patchWagerBody = Joi.object({
 
 const completeWagerBody = Joi.object({
   completedBy: Joi.string().required(),
-  winnerEmail: Joi.string().required()
+  winners: Joi.array().required()
 });
 
 module.exports = {

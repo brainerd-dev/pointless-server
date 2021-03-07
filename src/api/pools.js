@@ -156,7 +156,7 @@ pools.patch('/:poolId/wagers/:wagerId/complete',
 
       const updates = await poolsData.completeWager(pool, updatedWager, completedBy);
 
-      await poolsData.transferPoints(poolId, winners, wager.amount);
+      await poolsData.transferWinnerPoints(poolId, winners, wager.amount);
 
       return status.success(res, { updatedWager: updates });
     }
