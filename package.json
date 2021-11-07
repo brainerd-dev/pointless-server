@@ -1,11 +1,11 @@
 {
   "name": "banana-peel-server",
   "version": "0.1.0",
-  "engines": {
-    "node": "^12.14.0",
-    "npm": "^6.13.4"
-  },
   "private": true,
+  "engines": {
+    "node": "14.16.1",
+    "npm": "6.14.12"
+  },
   "dependencies": {
     "@sendgrid/mail": "7.4.0",
     "@slippi/slippi-js": "5.0.4",
