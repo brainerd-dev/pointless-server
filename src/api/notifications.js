@@ -32,7 +32,7 @@ notifications.get('/', validator.query(getUserNotificationsQuery), async (req, r
 notifications.post('/invitation', validator.body(postInvitationBody), async (req, res) => {
   const { body: { to, poolId, location } } = req;
 
-  const from = 'Pointless <noreplay@pntls.app>';
+  const from = 'Pointless <andrew@brainerd.dev>';
   const subject = 'You have been invited to a Pointless pool';
   const text = 'We bet you will have a lot of fun joining this pool';
   const html = getInviteHtml(poolId, location);
