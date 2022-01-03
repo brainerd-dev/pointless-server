@@ -35,6 +35,10 @@ pools.get('/', validator.query(getUserPoolsQuery), async (req, res) => {
 pools.get('/:poolId', validator.params(defaultPoolParams), async (req, res) => {
   const { params: { poolId } } = req;
 
+  if (!poolId) {
+    return status.badRequest(res, { message: 'Invalid Pool ID provided' });
+  }
+
   const pool = await poolsData.getPoolById(poolId);
 
   return status.success(res, { ...pool });

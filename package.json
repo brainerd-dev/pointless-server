@@ -1,10 +1,10 @@
 {
-  "name": "banana-peel-server",
+  "name": "pointless-server",
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "14.16.1",
-    "npm": "6.14.12"
+    "node": ">=14.16.1",
+    "npm": ">=6.14.12"
   },
   "dependencies": {
     "@sendgrid/mail": "7.4.0",
@@ -36,7 +36,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn verify"
+      "pre-push": "yarn lint"
     }
   }
 }

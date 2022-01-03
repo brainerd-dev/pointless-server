@@ -34,7 +34,9 @@ const createPool = async (name, createdBy, users, startingPoints = 500) => {
     createdBy,
     users,
     minimumBet: 5,
-    startingPoints,
+    config: {
+      startingPoints
+    },
     pointTotals: {
       [user._id]: startingPoints
     },
